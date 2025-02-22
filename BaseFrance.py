@@ -149,22 +149,38 @@ def remplirBDD():
 		if vil_code_insee != ville_en_cours:
 			ville_en_cours = vil_code_insee
 			tqdm.write(Fore.BLUE + f"[*] Ville en cours : {vil_nom} ({vil_code_postal})" + Style.RESET_ALL)
+
+			# Insérer les données dans la table des villes si elles n'existent pas
+			cursor.execute("""
+				INSERT OR IGNORE INTO VILLES (VIL_CODE_INSEE, VIL_NOM, VIL_CODE_POSTAL)
+				VALUES (?, ?, ?)
+			""", (vil_code_insee, vil_nom, vil_code_postal))
+
+			# Valider les modifications
 			conn.commit()
 
-		# Récupérer l'altitude
-		adr_altitude = recupAltitude(adr_latitude, adr_longitude)
-
-		# Insérer les données dans la table des villes si elles n'existent pas
+		# Vérifier si l'adresse existe déjà dans la base de données
 		cursor.execute("""
-			INSERT OR IGNORE INTO VILLES (VIL_CODE_INSEE, VIL_NOM, VIL_CODE_POSTAL)
-			VALUES (?, ?, ?)
-		""", (vil_code_insee, vil_nom, vil_code_postal))
+			SELECT COUNT(*) AS EXISTE, ADR_ALTITUDE
+			FROM ADRESSES
+			WHERE ADR_ID = ?;
+		""", (adr_id,))
+		reponse = cursor.fetchone()
+		adresse_existe = reponse["EXISTE"]
+		altitude_existe = reponse["ADR_ALTITUDE"]
 
-		# Insérer les données dans la table des adresses
-		cursor.execute("""
-			INSERT OR IGNORE INTO ADRESSES (ADR_ID, ADR_NUMERO, ADR_REP, ADR_NOM_VOIE, ADR_LATITUDE, ADR_LONGITUDE, ADR_ALTITUDE, ADR_VIL_CODE_INSEE)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-		""", (adr_id, adr_numero, adr_rep, adr_nom_voie, adr_latitude, adr_longitude, adr_altitude, vil_code_insee))
+		# Si l'adresse existe déjà, passer à la suivante
+		if adresse_existe > 0 and altitude_existe is not None:
+			continue
+		else:
+			# Récupérer l'altitude
+			adr_altitude = recupAltitude(adr_latitude, adr_longitude)
+
+			# Insérer les données dans la table des adresses
+			cursor.execute("""
+				INSERT OR REPLACE INTO ADRESSES (ADR_ID, ADR_NUMERO, ADR_REP, ADR_NOM_VOIE, ADR_LATITUDE, ADR_LONGITUDE, ADR_ALTITUDE, ADR_VIL_CODE_INSEE)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+			""", (adr_id, adr_numero, adr_rep, adr_nom_voie, adr_latitude, adr_longitude, adr_altitude, vil_code_insee))
 
 	# Valider les modifications
 	conn.commit()
