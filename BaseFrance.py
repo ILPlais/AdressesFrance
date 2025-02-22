@@ -98,6 +98,7 @@ def remplirBDD():
 	"""
 	# Ouvrir la connexion à la base de données
 	conn = sqlite3.connect(f"adresses-{scope}.sqlite")
+	conn.row_factory = sqlite3.Row
 	cursor = conn.cursor()
 
 	# Lire le fichier CSV en utilisant pandas
@@ -148,7 +149,7 @@ def remplirBDD():
 		# Affichage de la ville en cours
 		if vil_code_insee != ville_en_cours:
 			ville_en_cours = vil_code_insee
-			tqdm.write(Fore.BLUE + f"[*] Ville en cours : {vil_nom} ({vil_code_postal})" + Style.RESET_ALL)
+			tqdm.write(Fore.BLUE + f"[*] Ville en cours : {vil_nom} ({vil_code_postal})..." + Style.RESET_ALL)
 
 			# Insérer les données dans la table des villes si elles n'existent pas
 			cursor.execute("""
