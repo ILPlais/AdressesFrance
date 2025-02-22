@@ -25,7 +25,7 @@ def recupCSV():
 	Récupère le fichier CSV des adresses de toute la France.
 	"""
 	# Télécharger le fichier CSV
-	url = "https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/adresses-{scope}.csv.gz"
+	url = f"https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/adresses-{scope}.csv.gz"
 
 	print(Fore.BLUE + "[*] Téléchargement du fichier CSV..." + Style.RESET_ALL)
 
@@ -59,7 +59,7 @@ def creerBDD():
 	# Créer la table des villes
 	cursor.execute("""
 	CREATE TABLE IF NOT EXISTS VILLES (
-		VIL_CODE_INSEE    INTEGER PRIMARY KEY,
+		VIL_CODE_INSEE    TEXT PRIMARY KEY,
 		VIL_NOM           TEXT NOT NULL,
 		VIL_CODE_POSTAL   TEXT NOT NULL
 	);
@@ -102,7 +102,22 @@ def remplirBDD():
 
 	# Lire le fichier CSV en utilisant pandas
 	print(Fore.BLUE + "[*] Lecture du fichier CSV..." + Style.RESET_ALL)
-	donneesCSV = pandas.read_csv(f"adresses-{scope}.csv", sep = ";", encoding = "utf-8", index_col = "id")
+	donneesCSV = pandas.read_csv(f"adresses-{scope}.csv",
+		sep = ";",
+		encoding = "utf-8",
+		index_col = "id",
+		usecols = ["id", "numero", "rep", "nom_voie", "code_postal", "code_insee", "nom_commune", "lon", "lat"],
+		dtype = {
+			"id": str,
+			"numero": int,
+			"nom_voie": str,
+			"code_postal": str,
+			"code_insee": str,
+			"nom_commune": str,
+			"lon": float,
+			"lat": float
+		}
+	)
 
 	# Nombre total d'adresses
 	print(Fore.BLUE + "[*] Comptage des adresses..." + Style.RESET_ALL)
@@ -121,14 +136,14 @@ def remplirBDD():
 			total = nombre_adresses):
 		# Récupérer les données de la ligne
 		adr_id = ligne.Index
-		adr_numero = int(ligne.numero)
+		adr_numero = ligne.numero
 		adr_rep = ligne.rep
 		adr_nom_voie = ligne.nom_voie
 		vil_code_postal = ligne.code_postal
-		vil_code_insee = int(ligne.code_insee)
+		vil_code_insee = ligne.code_insee
 		vil_nom = ligne.nom_commune
-		adr_longitude = float(ligne.lon)
-		adr_latitude = float(ligne.lat)
+		adr_longitude = ligne.lon
+		adr_latitude = ligne.lat
 
 		# Récupérer l'altitude
 		adr_altitude = recupAltitude(adr_latitude, adr_longitude)
