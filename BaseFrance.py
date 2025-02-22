@@ -145,6 +145,12 @@ def remplirBDD():
 		adr_longitude = ligne.lon
 		adr_latitude = ligne.lat
 
+		# Affichage de la ville en cours
+		if vil_code_insee != ville_en_cours:
+			ville_en_cours = vil_code_insee
+			tqdm.write(Fore.BLUE + f"[*] Ville en cours : {vil_nom} ({vil_code_postal})" + Style.RESET_ALL)
+			conn.commit()
+
 		# Récupérer l'altitude
 		adr_altitude = recupAltitude(adr_latitude, adr_longitude)
 
@@ -160,12 +166,6 @@ def remplirBDD():
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		""", (adr_id, adr_numero, adr_rep, adr_nom_voie, adr_latitude, adr_longitude, adr_altitude, vil_code_insee))
 
-		# Validation de la ville en cours
-		if vil_code_insee != ville_en_cours:
-			ville_en_cours = vil_code_insee
-			tqdm.write(Fore.BLUE + f"[*] Ville terminée : {vil_nom} ({vil_code_postal})" + Style.RESET_ALL)
-			conn.commit()
-
 	# Valider les modifications
 	conn.commit()
 
@@ -179,7 +179,7 @@ def recupAltitude(latitude: float, longitude: float) -> float:
 		altitude = gmaps.elevation((latitude, longitude))
 		return altitude[0]["elevation"]
 	except Exception as e:
-		print(Fore.RED + f"[!] Erreur lors de la récupération de l'altitude: {e}." + Style.RESET_ALL)
+		print(Fore.RED + f"[!] Erreur lors de la récupération de l'altitude : {e}." + Style.RESET_ALL)
 		return None
 
 if __name__ == "__main__":
