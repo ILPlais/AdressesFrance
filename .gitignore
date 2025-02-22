@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+!# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Fichiers CSV
+adresses-*.csv
+adresses-*.csv.gz
+adresses-*.sqlite*

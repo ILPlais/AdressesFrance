@@ -1,0 +1,6 @@
+requests
+pandas
+colorama
+python-dotenv
+googlemaps
+tqdm
